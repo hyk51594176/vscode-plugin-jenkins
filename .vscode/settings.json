@@ -1,0 +1,27 @@
+{
+    "standard.validate": [
+        "javascriptreact",
+        {
+            "language": "html",
+            "autoFix": true
+        },
+        {
+            "language": "vue",
+            "autoFix": true
+        },
+        {
+            "language": "javascript",
+            "autoFix": true
+        }
+    ],
+    "standard.options": {
+        "parser": "babel-eslint",
+        "ignore": [
+            "node_modules/**"
+        ],
+        "plugins": [
+            "html"
+        ]
+    },
+    "standard.autoFixOnSave": true,
+}
