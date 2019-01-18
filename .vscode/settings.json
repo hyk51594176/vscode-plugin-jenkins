@@ -24,4 +24,5 @@
         ]
     },
     "standard.autoFixOnSave": true,
+    "npm-scripts.showStartNotification": false,
 }
