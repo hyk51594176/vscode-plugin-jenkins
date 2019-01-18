@@ -1,31 +1,22 @@
 # jenkins
 
-
 ## This same functionality is now built in to vscode
-
-
-----
 
 # Features
 
 **Now supports Workspaces!**
 
-
 # Demo
-
 
 # Usage
 
-
 ## Contributors
-
-
 
 ## Configuration
 
 {
 ...
-  "jenkins.name": "",
+  "jenkins.username": "",
   "jenkins.password": "",
   "jenkins.url":
 ...
