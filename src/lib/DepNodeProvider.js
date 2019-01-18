@@ -1,15 +1,11 @@
 const vscode = require('vscode')
 const createJenkins = require('jenkins')
 class Dependency extends vscode.TreeItem {
-  constructor (label, collapsibleState, data) {
-    super(label, collapsibleState)
+  constructor (label, collapsibleState, data, command) {
+    super(label, collapsibleState, command)
     this.data = data
     if (data && data.type === 'job') {
-      this.command = {
-        command: 'jenkinsExplorer.publish',
-        title: 'jenkins publish',
-        arguments: [data]
-      }
+      this.command = command
     }
   }
 }
@@ -43,11 +39,11 @@ class DepNodeProvider {
   }
   createLog (name, number) {
     const log = this.jenkins.build.logStream(name, number)
-    this.terminals[name].log.show(true)
-    const self = this
+    const print = vscode.window.createOutputChannel('#' + number + name)
+    print.show(true)
     return new Promise(function (resolve, reject) {
       log.on('data', function (text) {
-        self.terminals[name].log.appendLine(text)
+        print.appendLine(text)
       })
       log.on('error', reject)
       log.on('end', resolve)
@@ -80,24 +76,16 @@ class DepNodeProvider {
       })
   }
   publish ({ name }) {
-    if (this.terminals[name] && this.terminals[name].isStart) {
-      this.terminals[name].log.show()
+    if (this.terminals[name]) {
       return vscode.window.showInformationMessage('正在构建中')
     }
-    if (this.terminals[name]) {
-      this.terminals[name].isStart = true
-    } else {
-      this.terminals[name] = {
-        isStart: true,
-        log: vscode.window.createOutputChannel(name)
-      }
-    }
-    this.jenkins.job.get('开发环境-usercenter-web-发布')
+    this.terminals[name] = true
+    this.jenkins.job.get(name)
       .then(this.showMessage.bind(this))
       .then(() => {
-        this.terminals[name].isStart = false
+        this.terminals[name] = false
       }).catch(() => {
-        this.terminals[name].isStart = false
+        this.terminals[name] = false
       })
   }
   getChildren (element) {
@@ -117,7 +105,11 @@ class DepNodeProvider {
           obj.type = 'job'
           return new Dependency(
             obj.name, vscode.TreeItemCollapsibleState.None,
-            obj)
+            obj, {
+              command: 'jenkinsExplorer.publish',
+              title: 'jenkins publish',
+              arguments: [obj]
+            })
         })
       })
     }
