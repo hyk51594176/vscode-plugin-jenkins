@@ -35,6 +35,7 @@ class DepNodeProvider {
     }
   }
   buildVersion (name, printlog) {
+    vscode.window.showInformationMessage(`开始发布：${name}`)
     return this.jenkins.job.build(name)
       .then(this.jenkins.queue.item)
       .then(res => this.createLog(name, res.executable.number, printlog))
@@ -60,8 +61,10 @@ class DepNodeProvider {
     const printlog = vscode.window.createOutputChannel(data.name)
     this.buildVersion(data.name, printlog).then(() => {
       this.terminals[data.name] = false
+      vscode.window.showInformationMessage(`${data.name}：发布成功`)
     }).catch((err) => {
       printlog.appendLine(err.message)
+      vscode.window.showInformationMessage(`${data.name}：发布失败`)
       this.terminals[data.name] = false
     })
   }
