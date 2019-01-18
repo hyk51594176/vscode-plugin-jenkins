@@ -23,10 +23,10 @@ class DepNodeProvider {
     this.createJ()
   }
   createJ () {
-    const { name, password, url } = vscode.workspace.getConfiguration('jenkins')
-    if (name && password && url) {
+    const { username, password, url } = vscode.workspace.getConfiguration('jenkins')
+    if (username && password && url) {
       let arr = url.split('//')
-      let baseUrl = arr[0] + '//' + name + ':' + password + '@' + arr[1]
+      let baseUrl = arr[0] + '//' + username + ':' + password + '@' + arr[1]
       this.jenkins = createJenkins({
         baseUrl,
         crumbIssuer: true,
@@ -57,8 +57,7 @@ class DepNodeProvider {
   publish (data) {
     if (this.terminals[data.name]) return
     this.terminals[data.name] = true
-    const printlog = vscode.window.createOutputChannel('jenkins/' + data.name)
-
+    const printlog = vscode.window.createOutputChannel(data.name)
     this.buildVersion(data.name, printlog).then(() => {
       this.terminals[data.name] = false
     }).catch((err) => {

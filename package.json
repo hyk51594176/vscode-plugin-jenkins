@@ -63,7 +63,7 @@
 					"type": "string",
 					"description": "jenkins地址"
 				},
-				"jenkins.name": {
+				"jenkins.username": {
 					"type": "string",
 					"description": "用户名"
 				},
