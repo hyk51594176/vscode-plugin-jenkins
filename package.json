@@ -2,7 +2,7 @@
 	"name": "vscode-plugin-jenkins",
 	"displayName": "",
 	"description": "",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"publisher": "hanyukai",
 	"engines": {
 		"vscode": "^1.30.0"

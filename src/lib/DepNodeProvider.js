@@ -1,15 +1,16 @@
 const vscode = require('vscode')
 const createJenkins = require('jenkins')
 class Dependency extends vscode.TreeItem {
-  constructor (
-    label,
-    collapsibleState,
-    data,
-    command = {}
-  ) {
-    super(label, collapsibleState, command)
+  constructor (label, collapsibleState, data) {
+    super(label, collapsibleState)
     this.data = data
-    this.command = command
+    if (data && data.type === 'job') {
+      this.command = {
+        command: 'jenkinsExplorer.publish',
+        title: 'jenkins publish',
+        arguments: [data]
+      }
+    }
   }
 }
 
@@ -34,18 +35,19 @@ class DepNodeProvider {
       })
     }
   }
-  buildVersion (name, printlog) {
+  buildVersion (name) {
     vscode.window.showInformationMessage(`开始发布：${name}`)
     return this.jenkins.job.build(name)
       .then(this.jenkins.queue.item)
-      .then(res => this.createLog(name, res.executable.number, printlog))
+      .then(res => this.createLog(name, res.executable.number))
   }
-  createLog (name, number, printlog) {
-    printlog.show()
+  createLog (name, number) {
     const log = this.jenkins.build.logStream(name, number)
+    this.terminals[name].log.show(true)
+    const self = this
     return new Promise(function (resolve, reject) {
       log.on('data', function (text) {
-        printlog.appendLine(text)
+        self.terminals[name].log.appendLine(text)
       })
       log.on('error', reject)
       log.on('end', resolve)
@@ -55,24 +57,55 @@ class DepNodeProvider {
     this.createJ()
     this._onDidChangeTreeData.fire()
   }
-  publish (data) {
-    if (this.terminals[data.name]) return
-    this.terminals[data.name] = true
-    const printlog = vscode.window.createOutputChannel(data.name)
-    this.buildVersion(data.name, printlog).then(() => {
-      this.terminals[data.name] = false
-      vscode.window.showInformationMessage(`${data.name}：发布成功`)
-    }).catch((err) => {
-      printlog.appendLine(err.message)
-      vscode.window.showInformationMessage(`${data.name}：发布失败`)
-      this.terminals[data.name] = false
-    })
+  showMessage ({ name, lastFailedBuild, lastSuccessfulBuild }) {
+    const lastFailStr = `上次失败构建${lastFailedBuild ? lastFailedBuild.number : '(无)'}`
+    const lastSuccessStr = `上次成功构建${lastSuccessfulBuild ? lastSuccessfulBuild.number : '(无)'}`
+    return vscode.window.showInformationMessage(
+      `${name}构建详情`,
+      lastFailStr,
+      lastSuccessStr, '立即构建')
+      .then((select) => {
+        if (select === '立即构建') {
+          return this.buildVersion(name)
+            .then(() => vscode.window.showInformationMessage(`${name}：发布成功`))
+            .catch(err => vscode.window.showInformationMessage(`${name}：发布失败 ${err.message}`))
+        }
+        if (select === lastFailStr && lastFailedBuild) {
+          return this.createLog(name, lastFailedBuild.number)
+        }
+        if (select === lastSuccessStr && lastSuccessfulBuild) {
+          return this.createLog(name, lastSuccessfulBuild.number)
+        }
+        return Promise.reject(new Error('取消'))
+      })
+  }
+  publish ({ name }) {
+    if (this.terminals[name] && this.terminals[name].isStart) {
+      this.terminals[name].log.show()
+      return vscode.window.showInformationMessage('正在构建中')
+    }
+    if (this.terminals[name]) {
+      this.terminals[name].isStart = true
+    } else {
+      this.terminals[name] = {
+        isStart: true,
+        log: vscode.window.createOutputChannel(name)
+      }
+    }
+    this.jenkins.job.get('开发环境-usercenter-web-发布')
+      .then(this.showMessage.bind(this))
+      .then(() => {
+        this.terminals[name].isStart = false
+      }).catch(() => {
+        this.terminals[name].isStart = false
+      })
   }
   getChildren (element) {
     if (!this.jenkins) return []
     if (!element) {
       return this.jenkins.view.list().then(res => {
         return res.map(obj => {
+          obj.type = 'view'
           return new Dependency(obj.name, vscode.TreeItemCollapsibleState.Collapsed, obj)
         })
       }).catch(err => {
@@ -81,14 +114,10 @@ class DepNodeProvider {
     } else {
       return this.jenkins.view.get(element.label).then(res => {
         return res.jobs.map(obj => {
+          obj.type = 'job'
           return new Dependency(
             obj.name, vscode.TreeItemCollapsibleState.None,
-            obj,
-            {
-              command: 'jenkinsExplorer.publish',
-              title: 'jenkins publish',
-              arguments: [obj]
-            })
+            obj)
         })
       })
     }
