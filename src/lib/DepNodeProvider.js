@@ -63,8 +63,14 @@ class DepNodeProvider {
       .then((select) => {
         if (select === '立即构建') {
           return this.buildVersion(name)
-            .then(() => vscode.window.showInformationMessage(`${name}：发布成功`))
-            .catch(err => vscode.window.showInformationMessage(`${name}：发布失败 ${err.message}`))
+            .then(() => {
+              vscode.window.showInformationMessage(`${name}：发布成功`)
+              return null
+            })
+            .catch(err => {
+              vscode.window.showInformationMessage(`${name}：发布失败 ${err.message}`)
+              return Promise.reject(err)
+            })
         }
         if (select === lastFailStr && lastFailedBuild) {
           return this.createLog(name, lastFailedBuild.number)
