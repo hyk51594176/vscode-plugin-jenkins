@@ -2,7 +2,7 @@
 	"name": "vscode-plugin-jenkins",
 	"displayName": "",
 	"description": "",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"publisher": "hanyukai",
 	"engines": {
 		"vscode": "^1.30.0"
@@ -79,7 +79,7 @@
 		"test": "node ./node_modules/vscode/bin/test",
 		"package": "vsce package"
 	},
-	"repository": "https://github.com/hyk51594176/mComponent",
+	"repository": "https://github.com/hyk51594176/vscode-plugin-jenkins",
 	"devDependencies": {
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^8.10.25",
