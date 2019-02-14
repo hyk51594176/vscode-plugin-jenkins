@@ -1,26 +1,14 @@
 # jenkins
 
-## This same functionality is now built in to vscode
-
-# Features
-
-**Now supports Workspaces!**
-
-# Demo
-
-# Usage
-
-## Contributors
-
 ## Configuration
 
+```json
 {
-...
   "jenkins.username": "",
   "jenkins.password": "",
   "jenkins.url":
-...
 }
+```
 
 ## Development
 
@@ -28,7 +16,3 @@
 * `npm install`
 * `npm run compile`
 * `F5` to start debugging
-
-## License
-
-MIT
