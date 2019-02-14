@@ -1,6 +1,6 @@
 # jenkins
 
-## Configuration
+## 配置
 
 ```json
 {
@@ -10,9 +10,10 @@
 }
 ```
 
-## Development
+## 构建
 
-* Open this example in VS Code
-* `npm install`
-* `npm run compile`
-* `F5` to start debugging
+```node
+npm install
+npm run postinstall
+npm run package
+```
