@@ -29,6 +29,8 @@ class DepNodeProvider {
         crumbIssuer: true,
         promisify: true
       })
+    } else {
+      vscode.window.showInformationMessage('请配置jenkins用户名密码和地址')
     }
   }
   buildVersion (name) {
